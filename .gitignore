@@ -1,2 +1,5 @@
 # 配布用 ZIP（リポジトリに含めない）
 business-report-management-handoff.zip
+
+# pack:zip 時の一時ファイル・Node 公式インストーラのキャッシュ
+.handoff-cache/

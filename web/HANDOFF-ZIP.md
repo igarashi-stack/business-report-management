@@ -10,6 +10,9 @@ cd web
 npm run pack:zip
 ```
 
+- **初回は数分かかることがあります**（公式サイトから Node.js **LTS** のインストーラーを取得して ZIP に同梱するため。`curl` が使える Windows 想定）。
+- 2回目以降は `.handoff-cache/` にキャッシュが残り、同じバージョンなら再ダウンロードを省略します。
+
 3. リポジトリの **ルート**（`Business report management` フォルダの直下）に  
    **`business-report-management-handoff.zip`** ができます。  
 4. この ZIP を USB・共有フォルダ・社内ストレージなど **安全な経路**で相手に渡す。
@@ -22,7 +25,9 @@ npm run pack:zip
 
 ### 共通の準備
 
-- **Node.js 20 以降**（[nodejs.org](https://nodejs.org/) の LTS をインストール）
+- **Node.js 20 以降**が必要です。次のどちらかで入れてください。
+  - **ZIP 内のインストーラー（推奨）**: 展開後の **`tools/nodejs-lts-installers/`** に、Windows 用 **`*-x64.msi`** と Mac 用 **`node-*.pkg`（ユニバーサル1本）** と **`README.txt`** があります。OS に合わせて実行してください。
+  - **自分で入手する場合**: [https://nodejs.org/](https://nodejs.org/) の LTS をインストール。
 - ZIP を展開する（フォルダ名は任意）
 
 ### 手順
