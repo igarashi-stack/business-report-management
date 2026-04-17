@@ -120,8 +120,12 @@ export function ReceivedInstructionsTable({
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     {unseenIds?.has(w.id) ? (
-                      <span className="rounded bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-900">
-                        未読
+                      <span
+                        className="inline-flex h-5 w-5 items-center justify-center rounded bg-red-100 text-[12px] font-bold text-red-700"
+                        aria-label="未読"
+                        title="未読"
+                      >
+                        未
                       </span>
                     ) : null}
                     <DashboardConfirmLink href={`/instructions/${w.id}/edit`} />

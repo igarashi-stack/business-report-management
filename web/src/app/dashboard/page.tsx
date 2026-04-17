@@ -335,7 +335,9 @@ export default function DashboardPage() {
               <table className="min-w-full text-left text-sm">
                 <thead className="border-b border-slate-200 bg-slate-50 text-slate-600">
                   <tr>
-                    <th className="w-14 px-4 py-3 font-medium">状態</th>
+                    <th className="w-16 px-4 py-3 font-medium whitespace-nowrap">
+                      状態
+                    </th>
                     <ListSortTh
                       className="px-4 py-3"
                       label="記入者"
@@ -368,8 +370,12 @@ export default function DashboardPage() {
                       <tr key={r.id} className="border-b border-slate-100">
                         <td className="px-4 py-3">
                           {unseenSubmissionReportIds.has(r.id) ? (
-                            <span className="rounded bg-sky-100 px-2 py-0.5 text-[11px] font-semibold text-sky-900">
-                              未読
+                            <span
+                              className="inline-flex h-5 w-5 items-center justify-center rounded bg-red-100 text-[12px] font-bold text-red-700"
+                              aria-label="未読"
+                              title="未読"
+                            >
+                              未
                             </span>
                           ) : (
                             <span className="text-xs text-slate-400">既読</span>
