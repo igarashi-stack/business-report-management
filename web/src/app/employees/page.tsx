@@ -16,14 +16,16 @@ export default function EmployeesPage() {
   const user = useSessionStore((s) => s.user);
   const [items, setItems] = useState<DirectoryUser[]>([]);
   const [err, setErr] = useState<string | null>(null);
+  const mode = useDirectoryVisibilityStore((s) => s.mode);
   const pinnedVisibleUserIds = useDirectoryVisibilityStore(
     (s) => s.pinnedVisibleUserIds
   );
   const togglePinnedVisible = useDirectoryVisibilityStore(
     (s) => s.togglePinnedVisible
   );
-  const clearPinnedVisible = useDirectoryVisibilityStore(
-    (s) => s.clearPinnedVisible
+  const showAll = useDirectoryVisibilityStore((s) => s.showAll);
+  const clearAllSelected = useDirectoryVisibilityStore(
+    (s) => s.clearAllSelected
   );
 
   const allIds = useMemo(() => items.map((u) => u.id), [items]);
@@ -51,7 +53,7 @@ export default function EmployeesPage() {
     return <p className="text-sm text-slate-500">読み込み中…</p>;
   }
 
-  const restrictionOn = pinnedVisibleUserIds.length > 0;
+  const restrictionOn = mode === "custom";
 
   return (
     <div className="space-y-6 pb-10">
@@ -70,14 +72,21 @@ export default function EmployeesPage() {
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
-          onClick={() => clearPinnedVisible()}
+          onClick={() => showAll()}
           className="rounded border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
         >
           表示制限を解除（全員を表示）
         </button>
+        <button
+          type="button"
+          onClick={() => clearAllSelected()}
+          className="rounded border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
+        >
+          全ての選択を解除
+        </button>
         <span className="text-xs text-slate-500">
           {restrictionOn
-            ? `プルダウン表示: ${pinnedVisibleUserIds.length} 名のみ`
+            ? `プルダウン表示: ${pinnedVisibleUserIds.length} 名`
             : "プルダウン: 制限なし（全員）"}
         </span>
       </div>
@@ -94,7 +103,7 @@ export default function EmployeesPage() {
           <tbody>
             {items.map((u) => {
               const inDropdown =
-                !restrictionOn || pinnedVisibleUserIds.includes(u.id);
+                mode === "all" || pinnedVisibleUserIds.includes(u.id);
               return (
                 <tr
                   key={u.id}

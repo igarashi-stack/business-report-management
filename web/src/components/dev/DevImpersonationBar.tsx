@@ -14,13 +14,14 @@ export function DevImpersonationBar() {
   const { getToken } = useAccessToken();
   const user = useSessionStore((s) => s.user);
   const devImpersonation = useSessionStore((s) => s.devImpersonation);
+  const canImpersonate = useSessionStore((s) => s.canImpersonate);
   const impersonateUserId = useSessionStore((s) => s.impersonateUserId);
   const setImpersonateUserId = useSessionStore((s) => s.setImpersonateUserId);
   const setUser = useSessionStore((s) => s.setUser);
   const [users, setUsers] = useState<DirUser[]>([]);
   const [loadErr, setLoadErr] = useState<string | null>(null);
 
-  const allowed = clientMaySendImpersonationHeader();
+  const allowed = clientMaySendImpersonationHeader() && canImpersonate;
 
   useEffect(() => {
     if (!allowed || !msalAuthed) return;

@@ -12,6 +12,21 @@ export function isDevImpersonationAllowed(): boolean {
   );
 }
 
+/** サーバー: なりすましを許可する管理者（Azure AD オブジェクト ID） */
+export function getImpersonationAdminAzureAdId(): string | null {
+  const raw = (process.env.IMPERSONATION_ADMIN_AAD_ID ?? "").trim();
+  if (!raw || !GUID_RE.test(raw)) return null;
+  return raw.toLowerCase();
+}
+
+/** サーバー: 実ログインユーザーが管理者なら、なりすまし（ユーザー差し替え）を許可 */
+export function mayImpersonateServer(actualAzureAdId: string): boolean {
+  if (!isDevImpersonationAllowed()) return false;
+  const admin = getImpersonationAdminAzureAdId();
+  if (!admin) return false;
+  return admin === actualAzureAdId.trim().toLowerCase();
+}
+
 /** クライアント: なりすましヘッダーを付与するか（ビルド時に埋め込み） */
 export function clientMaySendImpersonationHeader(): boolean {
   return (

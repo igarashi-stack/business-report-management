@@ -14,6 +14,9 @@ export async function authenticatedFetch(
   const headers = new Headers(init?.headers);
   headers.set("Authorization", `Bearer ${token}`);
   if (clientMaySendImpersonationHeader()) {
+    if (!useSessionStore.getState().canImpersonate) {
+      return fetch(input, { ...init, headers });
+    }
     const imp = useSessionStore.getState().impersonateUserId?.trim();
     if (imp) headers.set(DEV_IMPERSONATE_HEADER, imp);
   }

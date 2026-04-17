@@ -19,6 +19,7 @@ function NewReportPageContent() {
   const searchParams = useSearchParams();
   const duplicateFrom = searchParams.get("duplicateFrom");
 
+  const visibilityMode = useDirectoryVisibilityStore((s) => s.mode);
   const pinnedVisibleUserIds = useDirectoryVisibilityStore(
     (s) => s.pinnedVisibleUserIds
   );
@@ -121,8 +122,8 @@ function NewReportPageContent() {
   }
 
   const visibleUserOptions = useMemo(
-    () => filterVisibleUsers(userOptions, pinnedVisibleUserIds),
-    [userOptions, pinnedVisibleUserIds]
+    () => filterVisibleUsers(userOptions, visibilityMode, pinnedVisibleUserIds),
+    [userOptions, visibilityMode, pinnedVisibleUserIds]
   );
 
   if (!user)

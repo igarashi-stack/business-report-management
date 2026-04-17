@@ -2,13 +2,15 @@ import type { DirectoryUser } from "@/types/models";
 
 /**
  * 従業員一覧で「表示対象」にチェックした人だけに絞る（ドロップダウン用）
- * pinned が空のときは制限なし（全員表示）
+ * mode=all は制限なし（全員表示）
+ * mode=custom は pinned に含まれる人だけ表示（0 件も可）
  */
 export function filterVisibleUsers<T extends { id: string }>(
   users: T[],
+  mode: "all" | "custom",
   pinnedVisibleUserIds: readonly string[]
 ): T[] {
-  if (pinnedVisibleUserIds.length === 0) return users;
+  if (mode === "all") return users;
   const s = new Set(pinnedVisibleUserIds);
   return users.filter((u) => s.has(u.id));
 }

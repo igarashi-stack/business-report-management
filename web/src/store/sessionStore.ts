@@ -17,6 +17,9 @@ type SessionState = {
   setUser: (u: SessionUser | null) => void;
   sessionError: string | null;
   setSessionError: (msg: string | null) => void;
+  /** 現ユーザーが「ユーザー差し替え」を使える（サーバー判定） */
+  canImpersonate: boolean;
+  setCanImpersonate: (v: boolean) => void;
   /** 付与する X-Dev-Impersonate-User-Id（空で解除） */
   impersonateUserId: string | null;
   setImpersonateUserId: (id: string | null) => void;
@@ -29,6 +32,8 @@ export const useSessionStore = create<SessionState>((set) => ({
   setUser: (user) => set({ user }),
   sessionError: null,
   setSessionError: (sessionError) => set({ sessionError }),
+  canImpersonate: false,
+  setCanImpersonate: (canImpersonate) => set({ canImpersonate }),
   impersonateUserId: null,
   setImpersonateUserId: (impersonateUserId) => set({ impersonateUserId }),
   devImpersonation: null,

@@ -25,6 +25,7 @@ function NewInstructionPageContent() {
   const searchParams = useSearchParams();
   const fromReportId = searchParams.get("fromReport");
 
+  const visibilityMode = useDirectoryVisibilityStore((s) => s.mode);
   const pinnedVisibleUserIds = useDirectoryVisibilityStore(
     (s) => s.pinnedVisibleUserIds
   );
@@ -131,7 +132,7 @@ function NewInstructionPageContent() {
   }
 
   const userOptions = useMemo(() => {
-    const vis = filterVisibleUsers(users, pinnedVisibleUserIds);
+    const vis = filterVisibleUsers(users, visibilityMode, pinnedVisibleUserIds);
     const withTarget = dupSeed?.targetUserId
       ? mergeUserIfMissing(
           vis,
@@ -144,7 +145,7 @@ function NewInstructionPageContent() {
       displayName: u.displayName,
       email: u.email,
     }));
-  }, [users, pinnedVisibleUserIds, dupSeed?.targetUserId]);
+  }, [users, visibilityMode, pinnedVisibleUserIds, dupSeed?.targetUserId]);
 
   if (!user) {
     return <p className="text-sm text-slate-500">読み込み中…</p>;

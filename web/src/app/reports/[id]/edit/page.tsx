@@ -19,6 +19,7 @@ import type { DailyReport, DirectoryUser } from "@/types/models";
 import { ReportDocumentIcon } from "@/components/ui/DocumentTypeIcons";
 
 export default function EditReportPage() {
+  const visibilityMode = useDirectoryVisibilityStore((s) => s.mode);
   const pinnedVisibleUserIds = useDirectoryVisibilityStore(
     (s) => s.pinnedVisibleUserIds
   );
@@ -63,7 +64,11 @@ export default function EditReportPage() {
   }, [getToken, user]);
 
   const mergedUserOptions = useMemo(() => {
-    const base = filterVisibleUsers(userOptions, pinnedVisibleUserIds);
+    const base = filterVisibleUsers(
+      userOptions,
+      visibilityMode,
+      pinnedVisibleUserIds
+    );
     const withTarget = mergeUserIfMissing(
       base,
       report?.submissionTargetId,
@@ -77,6 +82,7 @@ export default function EditReportPage() {
     );
   }, [
     userOptions,
+    visibilityMode,
     pinnedVisibleUserIds,
     report?.submissionTargetId,
     report?.userId,

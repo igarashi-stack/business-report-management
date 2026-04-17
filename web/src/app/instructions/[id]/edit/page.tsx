@@ -21,6 +21,7 @@ import { InstructionDocumentIcon } from "@/components/ui/DocumentTypeIcons";
 type UserOption = { id: string; displayName: string; email: string };
 
 export default function EditInstructionPage() {
+  const visibilityMode = useDirectoryVisibilityStore((s) => s.mode);
   const pinnedVisibleUserIds = useDirectoryVisibilityStore(
     (s) => s.pinnedVisibleUserIds
   );
@@ -78,11 +79,11 @@ export default function EditInstructionPage() {
   const userOptionsForForm = useMemo(
     () =>
       mergeUserIfMissing(
-        filterVisibleUsers(users, pinnedVisibleUserIds),
+        filterVisibleUsers(users, visibilityMode, pinnedVisibleUserIds),
         row?.targetUserId,
         (id) => fallbackUserOption(id, `対象者 (${id.slice(0, 8)}…)`)
       ),
-    [users, pinnedVisibleUserIds, row?.targetUserId]
+    [users, visibilityMode, pinnedVisibleUserIds, row?.targetUserId]
   );
 
   const instructorOptionsForForm = useMemo(

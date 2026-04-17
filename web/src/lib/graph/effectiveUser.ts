@@ -1,4 +1,7 @@
-import { parseImpersonationHeader } from "@/lib/dev/impersonation";
+import {
+  mayImpersonateServer,
+  parseImpersonationHeader,
+} from "@/lib/dev/impersonation";
 import { listDirectoryUsers } from "./directoryUsers";
 import { getMe } from "./me";
 
@@ -28,6 +31,17 @@ export async function getEffectiveUser(
 
   const want = parseImpersonationHeader(req);
   if (!want || want === actualAzureAdId) {
+    return {
+      id: actualAzureAdId,
+      displayName: baseName || "ユーザー",
+      email: baseEmail,
+      actualAzureAdId,
+      isImpersonating: false,
+    };
+  }
+
+  // 本番でも ALLOW_DEV_IMPERSONATION を ON にできるが、実ログインが管理者（指定ID）のときだけ許可する。
+  if (!mayImpersonateServer(actualAzureAdId)) {
     return {
       id: actualAzureAdId,
       displayName: baseName || "ユーザー",

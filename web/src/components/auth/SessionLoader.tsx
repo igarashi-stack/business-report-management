@@ -18,6 +18,7 @@ export function SessionLoader() {
   const impersonateUserId = useSessionStore((s) => s.impersonateUserId);
   const { user, setUser, setSessionError, setDevImpersonation } =
     useSessionStore();
+  const setCanImpersonate = useSessionStore((s) => s.setCanImpersonate);
   const loadingRef = useRef(false);
 
   /** 直接 URL で /dev 等に入ったとき、MSAL 未ログインなら /login へ（getToken が常に null になるのを防ぐ） */
@@ -64,6 +65,7 @@ export function SessionLoader() {
         }
         setSessionError(null);
         setUser(data.user);
+        setCanImpersonate(Boolean(data.dev?.canImpersonate));
         if (data.dev?.impersonating && data.dev.actualUserId) {
           setDevImpersonation({
             actualUserId: data.dev.actualUserId,
@@ -92,6 +94,7 @@ export function SessionLoader() {
     setUser,
     setSessionError,
     setDevImpersonation,
+    setCanImpersonate,
     user,
     impersonateUserId,
   ]);
