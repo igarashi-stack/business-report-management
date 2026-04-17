@@ -45,4 +45,4 @@ npm run dev
 
 Next.js（App Router）、Microsoft Graph、MSAL、SharePoint リスト連携。詳細は `env.example` のコメントを参照してください。
 
-（自動デプロイ確認用の更新）
+（自動デプロイ確認用の更新・2）
