@@ -7,6 +7,7 @@
   },
   "scripts": {
     "bootstrap:local": "node scripts/bootstrap-local.mjs",
+    "pack:zip": "node scripts/pack-handoff-zip.mjs",
     "verify:env": "node scripts/verify-local-env.mjs",
     "dev": "next dev",
     "dev:lan": "next dev -H 0.0.0.0",
