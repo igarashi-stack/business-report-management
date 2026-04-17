@@ -1,4 +1,4 @@
-# App Service 名は Azure 側と合わせて変更してください（例: brm-jpe-prod）
+# 共用 Web（本番）向け: App Service 名は Azure 側と合わせて変更してください（例: brm-jpe-prod）
 name: Deploy web to Azure App Service
 
 on:

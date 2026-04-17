@@ -1,11 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /** Azure App Service / GitHub Actions へデプロイしやすいよう本番は単体実行用バンドルを出力 */
+  /** 共用 Web（本番）向け: Azure App Service / GitHub Actions で standalone を配布しやすくする */
   output: "standalone",
   /**
-   * 開発時に LAN 内 IP からアクセスすると Next の dev リソース（/_next/*）が
-   * クロスオリジンとしてブロックされ、画面が読み込み続けることがあるため許可する。
+   * ローカル開発（next dev）のみ: LAN 内 IP からアクセスすると /_next/* がブロックされることがあるため許可する。
+   * 本番（npm start / App Service）では通常不要。
    */
   allowedDevOrigins: ["localhost", "127.0.0.1", "192.168.1.147"],
 };

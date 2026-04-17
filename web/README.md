@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 業務報告・指示（Web）
 
-## Getting Started
+SharePoint のリストに業務報告書・業務指示書を保存する Next.js アプリです。
 
-First, run the development server:
+## 運用方針（仕様）
+
+**共用の Web（HTTPS の本番 URL）で利用する**ことを前提にします。  
+社員はブラウザから本番 URL にアクセスし、Microsoft でサインインして使います。
+
+- **本番**: Azure App Service などにデプロイし、アプリ設定に環境変数を載せる（例: リポジトリの `.github/workflows/azure-webapp.yml`）。
+- **ローカル**（`npm run dev`）: 開発・検証用。本番と同じ Entra アプリ登録に、必要なら **リダイレクト URI を localhost 用にも追加**します。
+
+## 本番デプロイ（概要）
+
+1. **Node.js 20+** でビルド（CI でも可）。このリポジトリは `web/` がアプリ本体です。
+2. **環境変数**: `web/env.example` を参照し、ホスト側のアプリ設定に本番値を設定する。
+3. **Entra ID**: リダイレクト URI に **`https://（本番ホスト）`** を登録し、`NEXT_PUBLIC_AZURE_AD_REDIRECT_URI` と一致させる。
+4. **SharePoint**: サイト ID・リスト ID・列の内部名（必要なら `SHAREPOINT_*_FIELD_*`）を設定する。
+
+GitHub Actions から Azure へ自動デプロイする例は `.github/workflows/azure-webapp.yml` を参照してください。
+
+## ローカル開発
 
 ```bash
+cd web
+npm install
+cp env.example .env.local
+# .env.local を編集してから
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+ブラウザで [http://localhost:3000](http://localhost:3000) を開きます。LAN から別端末で試す場合は `next.config.ts` の `allowedDevOrigins` を調整してください。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 技術スタック
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Next.js（App Router）、Microsoft Graph、MSAL、SharePoint リスト連携。詳細は `env.example` のコメントを参照してください。
