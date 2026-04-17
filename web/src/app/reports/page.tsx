@@ -21,7 +21,7 @@ import { formatReportNumber } from "@/lib/serial/documentNumber";
 const LIST_PAGE_SIZE = 20;
 
 type SortDir = ListSortDir;
-type ReportSortKey = "author" | "target" | "date" | "updated";
+type ReportSortKey = "number" | "author" | "target" | "date" | "updated";
 
 const deleteBtnClass =
   "rounded border border-red-200 bg-red-50 px-2 py-1 text-xs font-medium text-red-800 hover:bg-red-100";
@@ -89,9 +89,28 @@ export default function ReportsListPage() {
     const list = [...items];
     const mult = sortDir === "asc" ? 1 : -1;
     const nm = (id: string) => nameById.get(id) ?? id;
+    const parseSortableId = (id: string): { n?: number; s: string } => {
+      const s = String(id ?? "").trim();
+      const n = Number.parseInt(s, 10);
+      return Number.isFinite(n) ? { n, s } : { s };
+    };
     list.sort((a, b) => {
       let c = 0;
       switch (sortKey) {
+        case "number": {
+          const pa = parseSortableId(a.id);
+          const pb = parseSortableId(b.id);
+          if (typeof pa.n === "number" && typeof pb.n === "number") {
+            c = pa.n - pb.n;
+          } else if (typeof pa.n === "number") {
+            c = -1;
+          } else if (typeof pb.n === "number") {
+            c = 1;
+          } else {
+            c = pa.s.localeCompare(pb.s, "ja");
+          }
+          break;
+        }
         case "author":
           c = nm(a.userId).localeCompare(nm(b.userId), "ja");
           break;
@@ -186,7 +205,12 @@ export default function ReportsListPage() {
         <table className="min-w-full text-left text-sm">
           <thead className="border-b bg-zinc-50 text-zinc-600">
             <tr>
-              <th className="px-3 py-2 font-medium">番号</th>
+              <ListSortTh
+                label="番号"
+                active={sortKey === "number"}
+                dir={sortDir}
+                onClick={() => cycleSort("number")}
+              />
               <ListSortTh
                 label="記入者"
                 active={sortKey === "author"}

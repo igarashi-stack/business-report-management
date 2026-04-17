@@ -19,6 +19,7 @@ const LIST_PAGE_SIZE = 20;
 
 type SortDir = ListSortDir;
 type InstrSortKey =
+  | "number"
   | "admin"
   | "targetUser"
   | "instructionDate"
@@ -86,7 +87,7 @@ export default function InstructionsListPage() {
       const descDefault =
         key === "instructionDate" || key === "targetDate" || key === "updated";
       setSortDir(
-        key === "admin" || key === "targetUser"
+        key === "number" || key === "admin" || key === "targetUser"
           ? "asc"
           : descDefault
             ? "desc"
@@ -109,9 +110,28 @@ export default function InstructionsListPage() {
   const sortedRows = useMemo(() => {
     const list = [...rowData];
     const mult = sortDir === "asc" ? 1 : -1;
+    const parseSortableId = (id: string): { n?: number; s: string } => {
+      const s = String(id ?? "").trim();
+      const n = Number.parseInt(s, 10);
+      return Number.isFinite(n) ? { n, s } : { s };
+    };
     list.sort((a, b) => {
       let c = 0;
       switch (sortKey) {
+        case "number": {
+          const pa = parseSortableId(a.w.id);
+          const pb = parseSortableId(b.w.id);
+          if (typeof pa.n === "number" && typeof pb.n === "number") {
+            c = pa.n - pb.n;
+          } else if (typeof pa.n === "number") {
+            c = -1;
+          } else if (typeof pb.n === "number") {
+            c = 1;
+          } else {
+            c = pa.s.localeCompare(pb.s, "ja");
+          }
+          break;
+        }
         case "admin":
           c = a.authorName.localeCompare(b.authorName, "ja");
           break;
@@ -222,7 +242,12 @@ export default function InstructionsListPage() {
         <table className="min-w-full text-left text-sm">
           <thead className="border-b bg-zinc-50 text-zinc-600">
             <tr>
-              <th className="px-3 py-2 font-medium">番号</th>
+              <ListSortTh
+                label="番号"
+                active={sortKey === "number"}
+                dir={sortDir}
+                onClick={() => cycleSort("number")}
+              />
               <ListSortTh
                 label="指示者"
                 active={sortKey === "admin"}
