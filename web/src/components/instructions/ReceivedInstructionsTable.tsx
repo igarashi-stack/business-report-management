@@ -22,6 +22,7 @@ export function ReceivedInstructionsTable({
   items,
   emptyMessage = "受信した業務指示書はまだありません。",
   maxRows,
+  unseenIds,
   nameById,
   counterpartyLabel,
   counterpartyId,
@@ -30,6 +31,7 @@ export function ReceivedInstructionsTable({
   items: WorkInstruction[];
   emptyMessage?: string;
   maxRows?: number;
+  unseenIds?: ReadonlySet<string>;
   nameById: Map<string, string>;
   /** 列見出し（受信: 差出人 / 作成: 宛先 など） */
   counterpartyLabel: string;
@@ -116,7 +118,14 @@ export function ReceivedInstructionsTable({
                   {formatListUpdatedAt(w.createdAt ?? "", w.submittedAt ?? "")}
                 </td>
                 <td className="px-4 py-3">
-                  <DashboardConfirmLink href={`/instructions/${w.id}/edit`} />
+                  <div className="flex items-center gap-2">
+                    {unseenIds?.has(w.id) ? (
+                      <span className="rounded bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-900">
+                        未読
+                      </span>
+                    ) : null}
+                    <DashboardConfirmLink href={`/instructions/${w.id}/edit`} />
+                  </div>
                 </td>
               </tr>
             );

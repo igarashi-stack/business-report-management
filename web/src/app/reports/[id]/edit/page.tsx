@@ -17,6 +17,7 @@ import { useDirectoryVisibilityStore } from "@/store/directoryVisibilityStore";
 import { SecondaryButton } from "@/components/ui/FormPrimitives";
 import type { DailyReport, DirectoryUser } from "@/types/models";
 import { ReportDocumentIcon } from "@/components/ui/DocumentTypeIcons";
+import { useSeenStore } from "@/store/seenStore";
 
 export default function EditReportPage() {
   const visibilityMode = useDirectoryVisibilityStore((s) => s.mode);
@@ -28,6 +29,7 @@ export default function EditReportPage() {
   const authed = useIsAuthenticated();
   const { getToken } = useAccessToken();
   const user = useSessionStore((s) => s.user);
+  const markReportSeen = useSeenStore((s) => s.markReportSeen);
   const router = useRouter();
   const [report, setReport] = useState<DailyReport | null>(null);
   const [userOptions, setUserOptions] = useState<DirectoryUser[]>([]);
@@ -51,6 +53,12 @@ export default function EditReportPage() {
       }
     })();
   }, [getToken, id, user]);
+
+  // 閲覧（編集画面を開いた）= 既読扱い
+  useEffect(() => {
+    if (!user?.id || !id) return;
+    markReportSeen(user.id, id);
+  }, [id, markReportSeen, user?.id]);
 
   useEffect(() => {
     if (!user) return;

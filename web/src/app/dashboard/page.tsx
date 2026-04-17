@@ -23,6 +23,7 @@ import {
   InstructionDocumentIcon,
   ReportDocumentIcon,
 } from "@/components/ui/DocumentTypeIcons";
+import { useSeenStore } from "@/store/seenStore";
 
 const RECEIVED_REPORTS_PAGE = 10;
 const RECEIVED_INSTRUCTIONS_PAGE = 5;
@@ -42,6 +43,7 @@ export default function DashboardPage() {
   const authed = useIsAuthenticated();
   const router = useRouter();
   const { getToken } = useAccessToken();
+  const byUserSeen = useSeenStore((s) => s.byUser);
   const [receivedInstructions, setReceivedInstructions] = useState<
     WorkInstruction[]
   >([]);
@@ -111,6 +113,35 @@ export default function DashboardPage() {
     }
     return m;
   }, [directory]);
+
+  const seenForMe = useMemo(() => {
+    const uid = (user?.id ?? "").trim().toLowerCase();
+    return uid ? byUserSeen[uid] : undefined;
+  }, [byUserSeen, user?.id]);
+
+  const unseenSubmissionReportIds = useMemo(() => {
+    const m = new Set<string>();
+    const seen = seenForMe?.reports ?? {};
+    for (const r of submissionNotificationBase) {
+      const updatedMs = getItemUpdatedMs(r.createdAt, r.submittedAt);
+      const seenAt = typeof seen[r.id] === "number" ? seen[r.id] : 0;
+      if (updatedMs > 0 && seenAt < updatedMs) m.add(r.id);
+      else if (updatedMs === 0 && !seen[r.id]) m.add(r.id);
+    }
+    return m;
+  }, [seenForMe?.reports, submissionNotificationBase]);
+
+  const unseenInstructionIds = useMemo(() => {
+    const m = new Set<string>();
+    const seen = seenForMe?.instructions ?? {};
+    for (const w of receivedInstructions) {
+      const updatedMs = getItemUpdatedMs(w.createdAt, w.submittedAt);
+      const seenAt = typeof seen[w.id] === "number" ? seen[w.id] : 0;
+      if (updatedMs > 0 && seenAt < updatedMs) m.add(w.id);
+      else if (updatedMs === 0 && !seen[w.id]) m.add(w.id);
+    }
+    return m;
+  }, [receivedInstructions, seenForMe?.instructions]);
 
   function cycleReportSort(key: DashReportSortKey) {
     if (reportSortKey === key) {
@@ -280,6 +311,11 @@ export default function DashboardPage() {
             aria-hidden
           />
           受信した業務報告書
+          {unseenSubmissionReportIds.size > 0 ? (
+            <span className="ml-2 rounded bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-900">
+              未読 {unseenSubmissionReportIds.size}
+            </span>
+          ) : null}
         </h2>
         {reportErr && (
           <p className="text-sm text-red-600" role="alert">
@@ -299,6 +335,7 @@ export default function DashboardPage() {
               <table className="min-w-full text-left text-sm">
                 <thead className="border-b border-slate-200 bg-slate-50 text-slate-600">
                   <tr>
+                    <th className="w-14 px-4 py-3 font-medium">状態</th>
                     <ListSortTh
                       className="px-4 py-3"
                       label="記入者"
@@ -329,6 +366,15 @@ export default function DashboardPage() {
                       nameById.get(r.userId) ?? "（ユーザー名未取得）";
                     return (
                       <tr key={r.id} className="border-b border-slate-100">
+                        <td className="px-4 py-3">
+                          {unseenSubmissionReportIds.has(r.id) ? (
+                            <span className="rounded bg-sky-100 px-2 py-0.5 text-[11px] font-semibold text-sky-900">
+                              未読
+                            </span>
+                          ) : (
+                            <span className="text-xs text-slate-400">既読</span>
+                          )}
+                        </td>
                         <td className="px-4 py-3 font-medium text-slate-900">
                           {author}
                         </td>
@@ -369,6 +415,11 @@ export default function DashboardPage() {
             aria-hidden
           />
           受信した業務指示書
+          {unseenInstructionIds.size > 0 ? (
+            <span className="ml-2 rounded bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900">
+              未読 {unseenInstructionIds.size}
+            </span>
+          ) : null}
         </h2>
         {instrErr && (
           <p className="text-sm text-red-600" role="alert">
@@ -386,6 +437,7 @@ export default function DashboardPage() {
             </p>
             <ReceivedInstructionsTable
               items={displayedReceivedInstructions}
+              unseenIds={unseenInstructionIds}
               nameById={nameById}
               counterpartyLabel="指示者"
               counterpartyId={(w) => w.adminId}
@@ -406,4 +458,12 @@ export default function DashboardPage() {
       </section>
     </div>
   );
+}
+
+function getItemUpdatedMs(createdAt?: string, submittedAt?: string): number {
+  const s = Date.parse((submittedAt ?? "").trim());
+  if (Number.isFinite(s)) return s;
+  const c = Date.parse((createdAt ?? "").trim());
+  if (Number.isFinite(c)) return c;
+  return 0;
 }

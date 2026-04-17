@@ -17,6 +17,7 @@ import { useDirectoryVisibilityStore } from "@/store/directoryVisibilityStore";
 import { SecondaryButton } from "@/components/ui/FormPrimitives";
 import type { WorkInstruction } from "@/types/models";
 import { InstructionDocumentIcon } from "@/components/ui/DocumentTypeIcons";
+import { useSeenStore } from "@/store/seenStore";
 
 type UserOption = { id: string; displayName: string; email: string };
 
@@ -30,6 +31,7 @@ export default function EditInstructionPage() {
   const authed = useIsAuthenticated();
   const { getToken } = useAccessToken();
   const user = useSessionStore((s) => s.user);
+  const markInstructionSeen = useSeenStore((s) => s.markInstructionSeen);
   const router = useRouter();
   const [row, setRow] = useState<WorkInstruction | null>(null);
   const [users, setUsers] = useState<UserOption[]>([]);
@@ -75,6 +77,12 @@ export default function EditInstructionPage() {
       }
     })();
   }, [getToken, id, user]);
+
+  // 閲覧（編集画面を開いた）= 既読扱い
+  useEffect(() => {
+    if (!user?.id || !id) return;
+    markInstructionSeen(user.id, id);
+  }, [id, markInstructionSeen, user?.id]);
 
   const userOptionsForForm = useMemo(
     () =>
