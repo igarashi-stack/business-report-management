@@ -205,7 +205,7 @@ export function WorkInstructionForm({
                   <p className="mt-1.5 text-sm text-slate-800">
                     {initial.submittedAt
                       ? formatSlashDateTime(initial.submittedAt)
-                      : "—"}
+                      : ""}
                   </p>
                 </div>
               </>
