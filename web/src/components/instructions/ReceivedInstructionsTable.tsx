@@ -50,12 +50,18 @@ export function ReceivedInstructionsTable({
   }
 
   const thClass = "px-4 py-3";
+  const showStatus = Boolean(unseenIds);
 
   return (
     <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
       <table className="min-w-full text-left text-sm">
         <thead className="border-b border-slate-200 bg-slate-50 text-slate-600">
           <tr>
+            {showStatus ? (
+              <th className="w-16 px-4 py-3 font-medium whitespace-nowrap">
+                状態
+              </th>
+            ) : null}
             {sortHeader ? (
               <>
                 <ListSortTh
@@ -109,16 +115,8 @@ export function ReceivedInstructionsTable({
               nameById.get(cp) ?? (cp ? `${cp.slice(0, 8)}…` : "—");
             return (
               <tr key={w.id} className="border-b border-slate-100">
-                <td className="px-4 py-3">{cpName}</td>
-                <td className="px-4 py-3">{workStyleLabel(w.workStyle)}</td>
-                <td className="px-4 py-3 tabular-nums text-slate-800">
-                  {formatSlashDate(w.targetDate || "")}
-                </td>
-                <td className="px-4 py-3 tabular-nums text-slate-800">
-                  {formatListUpdatedAt(w.createdAt ?? "", w.submittedAt ?? "")}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
+                {showStatus ? (
+                  <td className="px-4 py-3">
                     {unseenIds?.has(w.id) ? (
                       <span
                         className="inline-flex h-5 w-5 items-center justify-center rounded bg-red-100 text-[12px] font-bold text-red-700"
@@ -128,8 +126,18 @@ export function ReceivedInstructionsTable({
                         未
                       </span>
                     ) : null}
-                    <DashboardConfirmLink href={`/instructions/${w.id}/edit`} />
-                  </div>
+                  </td>
+                ) : null}
+                <td className="px-4 py-3">{cpName}</td>
+                <td className="px-4 py-3">{workStyleLabel(w.workStyle)}</td>
+                <td className="px-4 py-3 tabular-nums text-slate-800">
+                  {formatSlashDate(w.targetDate || "")}
+                </td>
+                <td className="px-4 py-3 tabular-nums text-slate-800">
+                  {formatListUpdatedAt(w.createdAt ?? "", w.submittedAt ?? "")}
+                </td>
+                <td className="px-4 py-3">
+                  <DashboardConfirmLink href={`/instructions/${w.id}/edit`} />
                 </td>
               </tr>
             );

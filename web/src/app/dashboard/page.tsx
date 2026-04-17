@@ -377,9 +377,7 @@ export default function DashboardPage() {
                             >
                               未
                             </span>
-                          ) : (
-                            <span className="text-xs text-slate-400">既読</span>
-                          )}
+                          ) : null}
                         </td>
                         <td className="px-4 py-3 font-medium text-slate-900">
                           {author}
