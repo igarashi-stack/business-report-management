@@ -10,7 +10,7 @@ cd web
 npm run pack:zip
 ```
 
-- **初回は数分かかることがあります**（公式サイトから Node.js **LTS** のインストーラーを取得して ZIP に同梱するため。`curl` が使える Windows 想定）。
+- **初回は数分かかることがあります**（公式サイトから Node.js **LTS** を取得して ZIP に同梱するため。`curl` が使える Windows 想定）。
 - 2回目以降は `.handoff-cache/` にキャッシュが残り、同じバージョンなら再ダウンロードを省略します。
 
 3. リポジトリの **ルート**（`Business report management` フォルダの直下）に  
@@ -19,18 +19,24 @@ npm run pack:zip
 5. **`.env.local` は ZIP に含まれません。**  
    別途、パスワード管理ツールや社内ルールに従って相手に渡してください（中身は各自の PC で `web/.env.local` に保存）。
 
+### 同梱される Node.js
+
+- **Windows**: `tools/node-portable/windows/` に **展開済みの Node**（追加インストール不要で `起動.cmd` が使えます）
+- **Mac**: `tools/nodejs-official-installers/` に **公式 `.pkg`**（初回だけインストール。Windows から ZIP を作る都合上、Mac 用は tar 展開ではなく pkg 同梱です）
+
 ---
 
 ## 受け取る側（Windows でも Mac でも可）
 
-### 共通の準備
+### いちばんかんたんな方法
 
-- **Node.js 20 以降**が必要です。次のどちらかで入れてください。
-  - **ZIP 内のインストーラー（推奨）**: 展開後の **`tools/nodejs-lts-installers/`** に、Windows 用 **`*-x64.msi`** と Mac 用 **`node-*.pkg`（ユニバーサル1本）** と **`README.txt`** があります。OS に合わせて実行してください。
-  - **自分で入手する場合**: [https://nodejs.org/](https://nodejs.org/) の LTS をインストール。
-- ZIP を展開する（フォルダ名は任意）
+1. ZIP を展開する  
+2. **`起動.cmd`（Windows）** または **`起動.command`（Mac）** をダブルクリック  
+3. 画面の案内に従う（`.env.local` が無いときは編集のためメモ帳等が開きます）  
 
-### 手順
+詳細は同梱の **`ZIPの使い方.txt`** も参照してください。
+
+### 手動で進める場合（従来どおり）
 
 1. 展開したフォルダ内の **`web`** を開く。
 2. ターミナル（Mac は「ターミナル.app」、Windows は PowerShell）で:
@@ -58,15 +64,15 @@ npm run dev
 
 ### Mac での注意
 
-- コマンドは **プロジェクトの `web` フォルダで**実行する（上記の `cd web`）。
-- ファイアウォールやセキュリティソフトが Node を止めないか、初回だけ確認することがあります。
+- **初回**、`起動.command` が **Node の `.pkg` インストール**を開くことがあります。完了後にもう一度 `起動.command` を開いてください。
+- 「開発元が不明」と出たら **右クリック → 開く** を選んでください。
 
 ---
 
 ## よくある質問
 
 **Q. Mac でも動きますか？**  
-A. はい。Next.js は Windows / Mac のどちらでも、`web` で `npm install` と `npm run dev` が通れば同じように動きます。
+A. はい。初回だけ公式 `.pkg` で Node を入れてから、同じ手順で `npm run dev` します。
 
 **Q. 相手も同じ SharePoint を見られますか？**  
 A. **同じ Microsoft 365 テナントのユーザー**で、**その SharePoint サイトへのアクセス権**があれば同じリストを使えます。
