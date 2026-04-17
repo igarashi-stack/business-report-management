@@ -2,10 +2,14 @@
   "name": "web",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "bootstrap:local": "node scripts/bootstrap-local.mjs",
     "verify:env": "node scripts/verify-local-env.mjs",
     "dev": "next dev",
+    "dev:lan": "next dev -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"

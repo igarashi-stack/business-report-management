@@ -19,5 +19,5 @@ console.log("  1) Entra ID でアプリ登録（SPA・リダイレクト URI は
 console.log("  2) API の権限に管理者同意");
 console.log("  3) SharePoint にリスト作成・サイト/リスト ID を .env.local に記入");
 console.log("  4) npm run verify:env で未設定項目を確認");
-console.log("  5) npm run dev");
+console.log("  5) npm run dev（同じ Wi-Fi のスマホから試すなら npm run dev:lan と next.config の allowedDevOrigins）");
 console.log("");
