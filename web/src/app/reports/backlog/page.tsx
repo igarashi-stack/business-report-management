@@ -114,20 +114,18 @@ export default function HandheldBacklogPage() {
                       ? " SharePoint の同期確認に失敗しました。いったんこの端末の内容を表示しています（環境変数・権限・ネットワークをご確認ください）。"
                       : " SharePoint の同期設定が未設定のため、この端末（ブラウザ）にのみ保存されます。別端末でも使うには env.example の「手持ち案件リスト」を設定してください。"}
               </p>
-              {!remote ? (
-                <div className="mt-2">
-                  <button
-                    type="button"
-                    disabled={setupBusy}
-                    onClick={() => void fetchHandheldColumnEnvLines()}
-                    className="text-xs font-medium text-blue-700 hover:underline disabled:opacity-50"
-                  >
-                    {setupBusy
-                      ? "列設定を取得中…"
-                      : "列の内部名（envLines）を取得する"}
-                  </button>
-                </div>
-              ) : null}
+              <div className="mt-2">
+                <button
+                  type="button"
+                  disabled={setupBusy}
+                  onClick={() => void fetchHandheldColumnEnvLines()}
+                  className="text-xs font-medium text-blue-700 hover:underline disabled:opacity-50"
+                >
+                  {setupBusy
+                    ? "列設定を取得中…"
+                    : "列の内部名（envLines）を取得する"}
+                </button>
+              </div>
               {setupErr ? (
                 <p className="mt-2 text-xs text-red-600" role="alert">
                   {setupErr}
