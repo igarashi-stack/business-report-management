@@ -12,7 +12,6 @@ import {
   FormShell,
   PrimaryButton,
   fieldInputClass,
-  fieldTextareaClass,
 } from "@/components/ui/FormPrimitives";
 import { ReportDocumentIcon } from "@/components/ui/DocumentTypeIcons";
 
@@ -46,7 +45,7 @@ export default function HandheldBacklogPage() {
 
   function updateRow(
     i: number,
-    key: "projectNumber" | "projectName" | "content",
+    key: "projectNumber" | "projectName",
     v: string
   ) {
     setLines((prev) =>
@@ -164,15 +163,6 @@ export default function HandheldBacklogPage() {
                     className={fieldInputClass}
                     value={row.projectName}
                     onChange={(e) => updateRow(i, "projectName", e.target.value)}
-                  />
-                </div>
-                <div className="min-w-0 sm:col-span-2">
-                  <FieldLabel>内容</FieldLabel>
-                  <textarea
-                    rows={2}
-                    className={fieldTextareaClass}
-                    value={row.content}
-                    onChange={(e) => updateRow(i, "content", e.target.value)}
                   />
                 </div>
               </div>

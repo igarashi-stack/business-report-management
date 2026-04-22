@@ -41,8 +41,16 @@ const taskSchema = z.object({
   projectNumber: z.string(),
   projectName: z.string().min(1, "案件名を入力してください"),
   taskDetail: z.string(),
-  startTime: z.string().regex(/^\d{2}:\d{2}$/, "HH:mm 形式（例 09:00）"),
-  endTime: z.string().regex(/^\d{2}:\d{2}$/, "HH:mm 形式"),
+  // 仕様: 必須入力は「提出先・報告日・案件名」のみ。時刻は未入力でも保存できるようにする。
+  startTime: z
+    .string()
+    .refine(
+      (s) => !s.trim() || /^\d{2}:\d{2}$/.test(s),
+      "HH:mm 形式（例 09:00）"
+    ),
+  endTime: z
+    .string()
+    .refine((s) => !s.trim() || /^\d{2}:\d{2}$/.test(s), "HH:mm 形式"),
   duration: z.number().min(0),
 });
 
@@ -275,6 +283,7 @@ export function DailyReportForm({
     watchedTasks.forEach((t, i) => {
       const start = (t?.startTime ?? "").trim();
       const end = (t?.endTime ?? "").trim();
+      if (!start || !end) return;
       if (!isValidShiftClockHm(start) || !isValidShiftClockHm(end)) return;
       const mins = minutesBetween(start, end);
       const cur = form.getValues(`tasks.${i}.duration`);
@@ -491,7 +500,8 @@ export function DailyReportForm({
                     onPick={(line) => {
                       form.setValue(`tasks.${i}.projectNumber`, line.projectNumber);
                       form.setValue(`tasks.${i}.projectName`, line.projectName);
-                      form.setValue(`tasks.${i}.taskDetail`, line.content);
+                      // 手持ち案件リストから「内容」は廃止
+                      form.setValue(`tasks.${i}.taskDetail`, "");
                     }}
                   />
                   <div className="grid grid-cols-1 items-start gap-2 sm:grid-cols-[minmax(5rem,6.5rem)_1fr]">
@@ -607,7 +617,7 @@ export function DailyReportForm({
           title="明日の作業予定"
           description="番号・案件名・内容を行で追加できます。手持ち案件タブの内容をドロップダウンから呼び出せます。"
           dense
-          className="border-pink-100/80 bg-pink-50/70 ring-pink-100/60"
+          className="border-pink-200/80 bg-pink-50 ring-pink-100/70"
         >
           <div className="flex justify-end">
             <button
@@ -640,7 +650,8 @@ export function DailyReportForm({
                         `tomorrowLines.${i}.projectName`,
                         line.projectName
                       );
-                      form.setValue(`tomorrowLines.${i}.content`, line.content);
+                      // 手持ち案件リストから「内容」は廃止
+                      form.setValue(`tomorrowLines.${i}.content`, "");
                     }}
                   />
                   <div className="grid grid-cols-1 items-start gap-2 sm:grid-cols-[minmax(5rem,6.5rem)_1fr]">

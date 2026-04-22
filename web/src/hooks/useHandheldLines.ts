@@ -91,11 +91,17 @@ export function useHandheldLines(userId: string | undefined) {
     setSaveError(null);
     if (!userId) return;
     if (persisted === "loading") return;
+    // 「内容」列は廃止したため、保存時は常に空文字に寄せる（既存データのクレンジングも兼ねる）
+    const normalized = lines.map((l) => ({
+      projectNumber: l.projectNumber ?? "",
+      projectName: l.projectName ?? "",
+      content: "",
+    }));
     try {
       if (persisted === "sharepoint") {
         const res = await authenticatedFetch(getToken, "/api/handheld-projects", {
           method: "PUT",
-          body: JSON.stringify({ lines }),
+          body: JSON.stringify({ lines: normalized }),
         });
         const data = (await res.json()) as { error?: string };
         if (!res.ok) {
@@ -103,7 +109,7 @@ export function useHandheldLines(userId: string | undefined) {
         }
         return;
       }
-      writeHandheldLines(userId, lines);
+      writeHandheldLines(userId, normalized);
     } catch (e) {
       setSaveError(e instanceof Error ? e.message : "保存に失敗しました");
       throw e;
