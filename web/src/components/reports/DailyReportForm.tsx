@@ -207,10 +207,8 @@ function HandheldLinePicker({
                 ) : (
                   <ul className="divide-y divide-slate-100">
                     {filtered.map((l, idx) => {
-                      const title =
-                        [l.projectNumber, l.projectName]
-                          .filter((x) => x?.trim())
-                          .join(" ") || `行 ${idx + 1}`;
+                      const num = (l.projectNumber ?? "").trim();
+                      const name = (l.projectName ?? "").trim();
                       return (
                         <li key={`${l.projectNumber}-${l.projectName}-${idx}`}>
                           <button
@@ -221,9 +219,14 @@ function HandheldLinePicker({
                               setOpen(false);
                             }}
                           >
-                            <p className="text-sm font-medium text-slate-900">
-                              {title}
-                            </p>
+                            <div className="grid grid-cols-[5.5rem_1fr] items-center gap-3">
+                              <p className="truncate text-sm font-medium tabular-nums text-slate-700">
+                                {num || "—"}
+                              </p>
+                              <p className="truncate text-sm font-medium text-slate-900">
+                                {name || "（案件名なし）"}
+                              </p>
+                            </div>
                           </button>
                         </li>
                       );
