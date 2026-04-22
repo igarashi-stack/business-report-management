@@ -1,0 +1,14 @@
+import { create } from "zustand";
+
+type State = {
+  dirty: boolean;
+  setDirty: (dirty: boolean) => void;
+  reset: () => void;
+};
+
+export const useUnsavedChangesStore = create<State>((set) => ({
+  dirty: false,
+  setDirty: (dirty) => set({ dirty }),
+  reset: () => set({ dirty: false }),
+}));
+

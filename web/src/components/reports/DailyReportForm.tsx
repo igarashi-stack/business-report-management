@@ -24,6 +24,7 @@ import { formatSlashDateTime } from "@/lib/time/formatJa";
 import { handheldSnapshotForReport } from "@/lib/storage/handheldProjects";
 import { DailyReportPrintDocument } from "./DailyReportPrintDocument";
 import { TimeHmSelects } from "./TimeHmSelects";
+import { useUnsavedChangesStore } from "@/store/unsavedChangesStore";
 import {
   FieldError,
   FieldLabel,
@@ -310,6 +311,22 @@ export function DailyReportForm({
     defaultValues: defaults,
   });
 
+  const setDirty = useUnsavedChangesStore((s) => s.setDirty);
+  useEffect(() => {
+    const dirty = Boolean(form.formState.isDirty) && !Boolean(submitting);
+    setDirty(dirty);
+  }, [form.formState.isDirty, setDirty, submitting]);
+
+  useEffect(() => {
+    function onBeforeUnload(e: BeforeUnloadEvent) {
+      if (!form.formState.isDirty) return;
+      e.preventDefault();
+      e.returnValue = "";
+    }
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [form.formState.isDirty]);
+
   useEffect(() => {
     const ymd = String(form.getValues("date") || "").slice(0, 10).trim();
     const ymdCompact = ymd ? ymd.replaceAll("-", "") : "draft";
@@ -456,7 +473,12 @@ export function DailyReportForm({
   return (
     <FormShell className="space-y-4">
       <form
-        onSubmit={form.handleSubmit((v) => void onSubmit(v))}
+        onSubmit={form.handleSubmit(async (v) => {
+          await onSubmit(v);
+          // 成功したら「未保存」を解除（現在値を初期値扱いに）
+          form.reset(v);
+          useUnsavedChangesStore.getState().setDirty(false);
+        })}
         className="print:hidden"
         noValidate
       >

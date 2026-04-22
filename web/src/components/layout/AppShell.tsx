@@ -6,6 +6,7 @@ import { useMsal } from "@azure/msal-react";
 import { DevImpersonationBar } from "@/components/dev/DevImpersonationBar";
 import { useSessionStore } from "@/store/sessionStore";
 import type { ReactNode } from "react";
+import { ConfirmLink } from "@/components/ui/ConfirmLink";
 import {
   InstructionDocumentIcon,
   ReportDocumentIcon,
@@ -77,7 +78,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               {navLinks.map((l) => {
                 const active = isNavLinkActive(pathname, l.href);
                 return (
-                  <Link
+                  <ConfirmLink
                     key={l.href}
                     href={l.href}
                     className={
@@ -98,11 +99,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                       />
                     ) : null}
                     {l.label}
-                  </Link>
+                  </ConfirmLink>
                 );
               })}
               {showDevNav ? (
-                <Link
+                <ConfirmLink
                   href={devNavLink.href}
                   className={
                     isNavLinkActive(pathname, devNavLink.href)
@@ -111,7 +112,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   }
                 >
                   {devNavLink.label}
-                </Link>
+                </ConfirmLink>
               ) : null}
             </nav>
           </div>

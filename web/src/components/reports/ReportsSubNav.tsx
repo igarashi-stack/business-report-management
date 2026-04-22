@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { ConfirmLink } from "@/components/ui/ConfirmLink";
 import { usePathname } from "next/navigation";
 
 const tabs = [
@@ -30,7 +30,7 @@ export function ReportsSubNav() {
       {tabs.map((t) => {
         const active = tabActive(pathname, t.href);
         return (
-          <Link
+          <ConfirmLink
             key={t.href}
             href={t.href}
             className={
@@ -40,7 +40,7 @@ export function ReportsSubNav() {
             }
           >
             {t.label}
-          </Link>
+          </ConfirmLink>
         );
       })}
     </nav>

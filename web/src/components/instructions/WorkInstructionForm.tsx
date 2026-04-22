@@ -10,6 +10,7 @@ import { workStyleLabel } from "@/lib/instruction/workStyleLabel";
 import { formatSlashDateTime } from "@/lib/time/formatJa";
 import { safePdfFilenamePart } from "@/lib/pdf/safePdfFilename";
 import { WorkInstructionPrintDocument } from "./WorkInstructionPrintDocument";
+import { useUnsavedChangesStore } from "@/store/unsavedChangesStore";
 import {
   FieldError,
   FieldLabel,
@@ -94,6 +95,23 @@ export function WorkInstructionForm({
     defaultValues: defaults,
   });
 
+  const setDirty = useUnsavedChangesStore((s) => s.setDirty);
+  useEffect(() => {
+    const dirty =
+      Boolean(form.formState.isDirty) && !Boolean(submitting) && !Boolean(readOnly);
+    setDirty(dirty);
+  }, [form.formState.isDirty, setDirty, submitting, readOnly]);
+
+  useEffect(() => {
+    function onBeforeUnload(e: BeforeUnloadEvent) {
+      if (!form.formState.isDirty || readOnly) return;
+      e.preventDefault();
+      e.returnValue = "";
+    }
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [form.formState.isDirty, readOnly]);
+
   useEffect(() => {
     form.reset(defaults);
   }, [defaults, form]);
@@ -150,7 +168,11 @@ export function WorkInstructionForm({
   return (
     <FormShell>
       <form
-        onSubmit={form.handleSubmit((v) => void onSubmit(v))}
+        onSubmit={form.handleSubmit(async (v) => {
+          await onSubmit(v);
+          form.reset(v);
+          useUnsavedChangesStore.getState().setDirty(false);
+        })}
         className="relative"
         noValidate
       >

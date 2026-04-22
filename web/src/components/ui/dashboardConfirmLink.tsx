@@ -1,5 +1,5 @@
-import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
+import { ConfirmLink } from "@/components/ui/ConfirmLink";
 
 /** 一覧・ダッシュボードの「確認」（業務報告書一覧と同じ薄いトーン） */
 const className =
@@ -9,12 +9,12 @@ const className =
 export function DashboardConfirmLink({
   children = "確認",
   ...props
-}: Omit<ComponentProps<typeof Link>, "className"> & {
+}: Omit<ComponentProps<typeof ConfirmLink>, "className"> & {
   children?: ReactNode;
 }) {
   return (
-    <Link {...props} className={className}>
+    <ConfirmLink {...props} className={className}>
       {children}
-    </Link>
+    </ConfirmLink>
   );
 }
