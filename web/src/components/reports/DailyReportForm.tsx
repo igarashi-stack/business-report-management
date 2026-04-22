@@ -148,14 +148,12 @@ function HandheldLinePicker({
           setQ("");
           setOpen(true);
         }}
-        className="mt-1.5 inline-flex min-h-[42px] w-full items-center justify-between rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-sm font-medium text-slate-800 shadow-sm transition hover:bg-slate-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-1.5 inline-flex min-h-[42px] w-full items-center justify-between rounded-lg bg-blue-600 px-4 py-2 text-left text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-600"
         aria-haspopup="dialog"
         aria-expanded={open}
       >
         <span>{pickable ? "手持ちから入力" : "手持ち案件が未登録です"}</span>
-        {pickable ? (
-          <span className="text-xs font-normal text-slate-500">選択</span>
-        ) : null}
+        {pickable ? <span className="text-xs font-normal opacity-90">▼</span> : null}
       </button>
 
       {open ? (
