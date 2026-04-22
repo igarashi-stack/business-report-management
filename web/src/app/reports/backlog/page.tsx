@@ -114,7 +114,7 @@ export default function HandheldBacklogPage() {
                 {loading
                   ? " 保存先を確認中です…"
                   : remote
-                    ? " SharePoint に保存しているため、別端末からも同じ内容が使えます。"
+                    ? ""
                     : loadError
                       ? " SharePoint の同期確認に失敗しました。いったんこの端末の内容を表示しています（環境変数・権限・ネットワークをご確認ください）。"
                       : " SharePoint の同期設定が未設定のため、この端末（ブラウザ）にのみ保存されます。別端末でも使うには env.example の「手持ち案件リスト」を設定してください。"}
