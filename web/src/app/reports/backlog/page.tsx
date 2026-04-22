@@ -72,9 +72,13 @@ export default function HandheldBacklogPage() {
               </h1>
               <p className="mt-1 text-sm text-slate-600">
                 ここで登録した案件は、業務報告書の「本日の業務内容」「明日の作業予定」入力時にドロップダウンから呼び出せます。
-                {remote
-                  ? " SharePoint に保存しているため、別端末からも同じ内容が使えます。"
-                  : " 現在はこのブラウザにのみ保存されています。別端末でも使うには env.example の「手持ち案件リスト」を設定してください。"}
+                {loading
+                  ? " 保存先を確認中です…"
+                  : remote
+                    ? " SharePoint に保存しているため、別端末からも同じ内容が使えます。"
+                    : loadError
+                      ? " SharePoint の同期確認に失敗しました。いったんこの端末の内容を表示しています（環境変数・権限・ネットワークをご確認ください）。"
+                      : " SharePoint の同期設定が未設定のため、この端末（ブラウザ）にのみ保存されます。別端末でも使うには env.example の「手持ち案件リスト」を設定してください。"}
               </p>
             </div>
           </div>
