@@ -2,7 +2,7 @@ import { bearerFromRequest } from "@/lib/graph/client";
 import { getEffectiveUser } from "@/lib/graph/effectiveUser";
 import { getListIdSeenItems, getSharePointSiteId } from "@/lib/graph/env";
 import { listItems } from "@/lib/graph/listItems";
-import { userSeenFromListItems } from "@/lib/graph/seenItems";
+import { resolveSeenFieldKeys, userSeenFromListItems } from "@/lib/graph/seenItems";
 
 export async function GET(req: Request) {
   const token = bearerFromRequest(req);
@@ -17,8 +17,9 @@ export async function GET(req: Request) {
         syncEnabled: false,
       });
     }
+    const keys = await resolveSeenFieldKeys(token, siteId, listId);
     const items = await listItems(token, siteId, listId);
-    const seen = userSeenFromListItems(items, me.id);
+    const seen = userSeenFromListItems(items, me.id, keys);
     return Response.json({ seen, syncEnabled: true });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Error";

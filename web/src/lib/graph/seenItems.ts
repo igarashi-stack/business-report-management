@@ -22,6 +22,58 @@ export const SEEN_FIELDS = {
   seenAtMs: spField("SHAREPOINT_SEEN_FIELD_SEEN_AT_MS", "既読日時ms"),
 } as const;
 
+export type SeenFieldKeys = {
+  userId: string;
+  itemType: string;
+  itemId: string;
+  seenAtMs: string;
+};
+
+type GraphColumn = { name?: string; displayName?: string };
+
+function normalizeName(s: unknown): string {
+  return String(s ?? "").trim();
+}
+
+/**
+ * SharePoint 列は「表示名」と Graph の fields で使う「内部名」が異なることがあるため、
+ * columns API から内部名を自動解決する。
+ */
+export async function resolveSeenFieldKeys(
+  accessToken: string,
+  siteId: string,
+  listId: string
+): Promise<SeenFieldKeys> {
+  const desired: SeenFieldKeys = {
+    userId: SEEN_FIELDS.userId,
+    itemType: SEEN_FIELDS.itemType,
+    itemId: SEEN_FIELDS.itemId,
+    seenAtMs: SEEN_FIELDS.seenAtMs,
+  };
+
+  const cols = await graphRequest<{ value?: GraphColumn[] }>(
+    accessToken,
+    `/sites/${encodeURIComponent(siteId)}/lists/${encodeURIComponent(listId)}/columns?$select=name,displayName`
+  );
+
+  const byDisplay = new Map<string, string>();
+  const byName = new Map<string, string>();
+  for (const c of cols.value ?? []) {
+    const name = normalizeName(c.name);
+    const disp = normalizeName(c.displayName);
+    if (name) byName.set(name, name);
+    if (disp && name) byDisplay.set(disp, name);
+  }
+
+  const resolve = (want: string) => byName.get(want) ?? byDisplay.get(want) ?? want;
+  return {
+    userId: resolve(desired.userId),
+    itemType: resolve(desired.itemType),
+    itemId: resolve(desired.itemId),
+    seenAtMs: resolve(desired.seenAtMs),
+  };
+}
+
 function asString(v: unknown): string {
   if (v == null) return "";
   return String(v).trim();
@@ -47,7 +99,8 @@ export type UserSeen = {
 
 export function userSeenFromListItems(
   items: GraphListItem[],
-  userIdRaw: string
+  userIdRaw: string,
+  keys: SeenFieldKeys = SEEN_FIELDS
 ): UserSeen {
   const userId = normalizeUserId(userIdRaw);
   const reports: Record<string, number> = {};
@@ -55,10 +108,10 @@ export function userSeenFromListItems(
   for (const it of items) {
     const f = it.fields as Fields | undefined;
     if (!f) continue;
-    if (normalizeUserId(asString(f[SEEN_FIELDS.userId])) !== userId) continue;
-    const t = asString(f[SEEN_FIELDS.itemType]) as SeenItemType;
-    const docId = asString(f[SEEN_FIELDS.itemId]);
-    const seenAt = asNumber(f[SEEN_FIELDS.seenAtMs]);
+    if (normalizeUserId(asString(f[keys.userId])) !== userId) continue;
+    const t = asString(f[keys.itemType]) as SeenItemType;
+    const docId = asString(f[keys.itemId]);
+    const seenAt = asNumber(f[keys.seenAtMs]);
     if (!docId || !(seenAt > 0)) continue;
     if (t === "report") reports[docId] = Math.max(reports[docId] ?? 0, seenAt);
     else if (t === "instruction") {
@@ -76,7 +129,8 @@ export type SeenKey = {
 
 export function findSeenListItem(
   items: GraphListItem[],
-  key: SeenKey
+  key: SeenKey,
+  keys: SeenFieldKeys = SEEN_FIELDS
 ): GraphListItem | undefined {
   const uid = normalizeUserId(key.userId);
   const itemId = asString(key.itemId);
@@ -85,9 +139,9 @@ export function findSeenListItem(
     const f = it.fields as Fields | undefined;
     if (!f) return false;
     return (
-      normalizeUserId(asString(f[SEEN_FIELDS.userId])) === uid &&
-      asString(f[SEEN_FIELDS.itemType]) === type &&
-      asString(f[SEEN_FIELDS.itemId]) === itemId
+      normalizeUserId(asString(f[keys.userId])) === uid &&
+      asString(f[keys.itemType]) === type &&
+      asString(f[keys.itemId]) === itemId
     );
   });
 }

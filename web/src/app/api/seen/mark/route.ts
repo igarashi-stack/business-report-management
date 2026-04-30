@@ -4,8 +4,8 @@ import { getListIdSeenItems, getSharePointSiteId } from "@/lib/graph/env";
 import { createItem, listItems, patchItemFields } from "@/lib/graph/listItems";
 import {
   type SeenItemType,
-  SEEN_FIELDS,
   findSeenListItem,
+  resolveSeenFieldKeys,
 } from "@/lib/graph/seenItems";
 
 type Body = {
@@ -32,22 +32,27 @@ export async function POST(req: Request) {
     if (!listId) {
       return Response.json({ ok: false, syncEnabled: false });
     }
+    const keys = await resolveSeenFieldKeys(token, siteId, listId);
     const items = await listItems(token, siteId, listId);
-    const existing = findSeenListItem(items, { userId: me.id, type, itemId: id });
+    const existing = findSeenListItem(
+      items,
+      { userId: me.id, type, itemId: id },
+      keys
+    );
 
     if (existing) {
       await patchItemFields(token, siteId, listId, existing.id, {
-        [SEEN_FIELDS.seenAtMs]: atMs,
+        [keys.seenAtMs]: atMs,
       });
       return Response.json({ ok: true, updated: true });
     }
 
     await createItem(token, siteId, listId, {
       Title: `${type}:${id}:${me.id}`,
-      [SEEN_FIELDS.userId]: me.id,
-      [SEEN_FIELDS.itemType]: type,
-      [SEEN_FIELDS.itemId]: id,
-      [SEEN_FIELDS.seenAtMs]: atMs,
+      [keys.userId]: me.id,
+      [keys.itemType]: type,
+      [keys.itemId]: id,
+      [keys.seenAtMs]: atMs,
     });
     return Response.json({ ok: true, created: true });
   } catch (e) {
