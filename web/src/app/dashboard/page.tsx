@@ -277,7 +277,14 @@ export default function DashboardPage() {
               : false,
       };
     });
-    return { instructionRows: rows, instructionCount: receivedInstructions.length };
+    return {
+      instructionRows: rows,
+      instructionCount: receivedInstructions.length,
+      unseenInstructionIds: Array.from(unseenInstructionIds),
+      unseenInstructionCount: unseenInstructionIds.size,
+      unseenSubmissionReportIds: Array.from(unseenSubmissionReportIds),
+      unseenSubmissionReportCount: unseenSubmissionReportIds.size,
+    };
   }, [byUserSeen, receivedInstructions, seenDebugEnabled, user]);
 
   const sortedSubmissionReports = useMemo(() => {
