@@ -256,6 +256,30 @@ export default function DashboardPage() {
     return m;
   }, [seenForMe?.reports, submissionNotificationBase]);
 
+  const seenDebugCalc = useMemo(() => {
+    if (!seenDebugEnabled || !user) return null;
+    const uid = (user.id ?? "").trim().toLowerCase();
+    const seen = (uid ? byUserSeen[uid]?.instructions : undefined) ?? {};
+    const rows = receivedInstructions.slice(0, 15).map((w) => {
+      const updatedMs = getItemUpdatedMs(w.createdAt, w.submittedAt);
+      const seenAt = typeof seen[w.id] === "number" ? seen[w.id] : null;
+      return {
+        id: w.id,
+        createdAt: w.createdAt ?? "",
+        submittedAt: w.submittedAt ?? "",
+        updatedMs,
+        seenAt,
+        unread:
+          updatedMs > 0
+            ? (seenAt ?? 0) < updatedMs
+            : seenAt == null
+              ? true
+              : false,
+      };
+    });
+    return { instructionRows: rows, instructionCount: receivedInstructions.length };
+  }, [byUserSeen, receivedInstructions, seenDebugEnabled, user]);
+
   const sortedSubmissionReports = useMemo(() => {
     const list = [...submissionNotificationBase];
     const mult = reportSortDir === "asc" ? 1 : -1;
@@ -457,6 +481,11 @@ export default function DashboardPage() {
           {seenDebugActionResult ? (
             <pre className="mt-2 max-h-[240px] overflow-auto whitespace-pre-wrap break-words rounded bg-white p-2 text-[11px] text-slate-800">
               {seenDebugActionResult}
+            </pre>
+          ) : null}
+          {seenDebugCalc ? (
+            <pre className="mt-2 max-h-[240px] overflow-auto whitespace-pre-wrap break-words rounded bg-white p-2 text-[11px] text-slate-800">
+              {JSON.stringify(seenDebugCalc, null, 2)}
             </pre>
           ) : null}
           <pre className="mt-2 max-h-[320px] overflow-auto whitespace-pre-wrap break-words rounded bg-white p-2 text-[11px] text-slate-800">
