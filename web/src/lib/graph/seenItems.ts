@@ -82,7 +82,9 @@ function asString(v: unknown): string {
 function asNumber(v: unknown): number {
   if (typeof v === "number" && Number.isFinite(v)) return v;
   if (typeof v === "string") {
-    const n = Number(v);
+    // SharePoint の数値列が "1,234,567" のような文字列で返ることがある
+    const cleaned = v.replace(/,/g, "").trim();
+    const n = Number(cleaned);
     return Number.isFinite(n) ? n : 0;
   }
   return 0;
