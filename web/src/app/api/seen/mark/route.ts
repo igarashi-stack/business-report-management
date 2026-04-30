@@ -29,6 +29,9 @@ export async function POST(req: Request) {
 
     const siteId = getSharePointSiteId();
     const listId = getListIdSeenItems();
+    if (!listId) {
+      return Response.json({ ok: false, syncEnabled: false });
+    }
     const items = await listItems(token, siteId, listId);
     const existing = findSeenListItem(items, { userId: me.id, type, itemId: id });
 

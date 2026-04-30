@@ -21,8 +21,9 @@ export function getListIdWorkInstructions(): string {
 }
 
 /** 既読管理リストのリスト ID（端末間で既読を同期するため必須） */
-export function getListIdSeenItems(): string {
-  return requireServerEnv("SHAREPOINT_LIST_SEEN_ITEMS_ID");
+export function getListIdSeenItems(): string | undefined {
+  const v = process.env.SHAREPOINT_LIST_SEEN_ITEMS_ID?.trim();
+  return v && v.length > 0 ? v : undefined;
 }
 
 /**

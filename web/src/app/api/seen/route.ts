@@ -11,9 +11,15 @@ export async function GET(req: Request) {
     const me = await getEffectiveUser(req, token);
     const siteId = getSharePointSiteId();
     const listId = getListIdSeenItems();
+    if (!listId) {
+      return Response.json({
+        seen: { reports: {}, instructions: {} },
+        syncEnabled: false,
+      });
+    }
     const items = await listItems(token, siteId, listId);
     const seen = userSeenFromListItems(items, me.id);
-    return Response.json({ seen });
+    return Response.json({ seen, syncEnabled: true });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Error";
     return Response.json({ error: msg }, { status: 500 });

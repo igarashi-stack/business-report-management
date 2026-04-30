@@ -35,7 +35,7 @@ export default function ReportsListPage() {
   const [items, setItems] = useState<DailyReport[]>([]);
   const [directory, setDirectory] = useState<DirectoryUser[]>([]);
   const [err, setErr] = useState<string | null>(null);
-  const [sortKey, setSortKey] = useState<ReportSortKey>("date");
+  const [sortKey, setSortKey] = useState<ReportSortKey>("number");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [page, setPage] = useState(1);
 

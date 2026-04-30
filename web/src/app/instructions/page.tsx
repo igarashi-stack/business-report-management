@@ -37,7 +37,7 @@ export default function InstructionsListPage() {
   const [all, setAll] = useState<WorkInstruction[]>([]);
   const [directory, setDirectory] = useState<DirectoryUser[]>([]);
   const [err, setErr] = useState<string | null>(null);
-  const [sortKey, setSortKey] = useState<InstrSortKey>("targetDate");
+  const [sortKey, setSortKey] = useState<InstrSortKey>("number");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [page, setPage] = useState(1);
 
