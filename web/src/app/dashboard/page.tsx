@@ -2,7 +2,7 @@
 
 import { useSessionStore } from "@/store/sessionStore";
 import { useIsAuthenticated } from "@azure/msal-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useAccessToken } from "@/hooks/useAccessToken";
 import { authenticatedFetch } from "@/lib/api/authenticatedFetch";
@@ -41,6 +41,7 @@ export default function DashboardPage() {
   const sessionError = useSessionStore((s) => s.sessionError);
   const authed = useIsAuthenticated();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { getToken } = useAccessToken();
   const byUserSeen = useSeenStore((s) => s.byUser);
   const setUserSeen = useSeenStore((s) => s.setUserSeen);
@@ -63,6 +64,7 @@ export default function DashboardPage() {
   const [instrSortDir, setInstrSortDir] = useState<ListSortDir>("desc");
   const [markAllReportsBusy, setMarkAllReportsBusy] = useState(false);
   const [markAllInstrBusy, setMarkAllInstrBusy] = useState(false);
+  const [seenDebugJson, setSeenDebugJson] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authed) router.replace("/login");
@@ -107,6 +109,30 @@ export default function DashboardPage() {
       }
     })();
   }, [getToken, setUserSeen, user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const enabled = searchParams?.get("seenDebug") === "1";
+    if (!enabled) {
+      setSeenDebugJson(null);
+      return;
+    }
+    void (async () => {
+      try {
+        const res = await authenticatedFetch(getToken, "/api/seen?debug=1");
+        const json = await res.json().catch(() => ({}));
+        setSeenDebugJson(JSON.stringify(json, null, 2));
+      } catch (e) {
+        setSeenDebugJson(
+          JSON.stringify(
+            { error: e instanceof Error ? e.message : "debug fetch failed" },
+            null,
+            2
+          )
+        );
+      }
+    })();
+  }, [getToken, searchParams, user]);
 
   useEffect(() => {
     setReportPage(1);
@@ -359,6 +385,17 @@ export default function DashboardPage() {
       <h1 className="text-2xl font-semibold text-zinc-900">
         ようこそ、{user.displayName ?? "利用者"} さん
       </h1>
+
+      {seenDebugJson ? (
+        <section className="rounded border border-slate-200 bg-slate-50 p-3">
+          <p className="text-xs font-semibold text-slate-700">
+            seen debug（`/dashboard?seenDebug=1`）
+          </p>
+          <pre className="mt-2 max-h-[320px] overflow-auto whitespace-pre-wrap break-words rounded bg-white p-2 text-[11px] text-slate-800">
+            {seenDebugJson}
+          </pre>
+        </section>
+      ) : null}
 
       <section className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
