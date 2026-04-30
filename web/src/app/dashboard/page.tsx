@@ -2,7 +2,7 @@
 
 import { useSessionStore } from "@/store/sessionStore";
 import { useIsAuthenticated } from "@azure/msal-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useAccessToken } from "@/hooks/useAccessToken";
 import { authenticatedFetch } from "@/lib/api/authenticatedFetch";
@@ -41,7 +41,6 @@ export default function DashboardPage() {
   const sessionError = useSessionStore((s) => s.sessionError);
   const authed = useIsAuthenticated();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { getToken } = useAccessToken();
   const byUserSeen = useSeenStore((s) => s.byUser);
   const setUserSeen = useSeenStore((s) => s.setUserSeen);
@@ -65,10 +64,16 @@ export default function DashboardPage() {
   const [markAllReportsBusy, setMarkAllReportsBusy] = useState(false);
   const [markAllInstrBusy, setMarkAllInstrBusy] = useState(false);
   const [seenDebugJson, setSeenDebugJson] = useState<string | null>(null);
-  const seenDebugEnabled = searchParams?.get("seenDebug") === "1";
+  const [seenDebugEnabled, setSeenDebugEnabled] = useState(false);
   const [seenDebugActionResult, setSeenDebugActionResult] = useState<string | null>(
     null
   );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const enabled = new URLSearchParams(window.location.search).get("seenDebug") === "1";
+    setSeenDebugEnabled(enabled);
+  }, []);
 
   useEffect(() => {
     if (!authed) router.replace("/login");
@@ -503,7 +508,10 @@ export default function DashboardPage() {
         <div className="flex items-center justify-end">
           <button
             type="button"
-            onClick={() => router.push("/dashboard?seenDebug=1")}
+            onClick={() => {
+              setSeenDebugEnabled(true);
+              router.push("/dashboard?seenDebug=1");
+            }}
             className="rounded border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50"
           >
             既読デバッグを表示
