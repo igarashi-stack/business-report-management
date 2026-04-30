@@ -14,7 +14,6 @@ import {
   mergeUserIfMissing,
 } from "@/lib/directory/filterVisibleUsers";
 import { useDirectoryVisibilityStore } from "@/store/directoryVisibilityStore";
-import { SecondaryButton } from "@/components/ui/FormPrimitives";
 import type { WorkInstruction } from "@/types/models";
 import { InstructionDocumentIcon } from "@/components/ui/DocumentTypeIcons";
 import { useSeenStore } from "@/store/seenStore";
@@ -82,7 +81,18 @@ export default function EditInstructionPage() {
   useEffect(() => {
     if (!user?.id || !id) return;
     markInstructionSeen(user.id, id);
-  }, [id, markInstructionSeen, user?.id]);
+    void (async () => {
+      try {
+        await authenticatedFetch(getToken, "/api/seen/mark", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "instruction", id }),
+        });
+      } catch {
+        // 既読同期の失敗は致命的ではないため握りつぶす
+      }
+    })();
+  }, [getToken, id, markInstructionSeen, user?.id]);
 
   const userOptionsForForm = useMemo(
     () =>

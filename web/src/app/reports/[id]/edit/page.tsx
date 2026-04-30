@@ -62,7 +62,18 @@ export default function EditReportPage() {
   useEffect(() => {
     if (!user?.id || !id) return;
     markReportSeen(user.id, id);
-  }, [id, markReportSeen, user?.id]);
+    void (async () => {
+      try {
+        await authenticatedFetch(getToken, "/api/seen/mark", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "report", id }),
+        });
+      } catch {
+        // 既読同期の失敗は致命的ではないため握りつぶす
+      }
+    })();
+  }, [getToken, id, markReportSeen, user?.id]);
 
   useEffect(() => {
     if (!user) return;

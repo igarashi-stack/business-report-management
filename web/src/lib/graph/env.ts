@@ -20,6 +20,11 @@ export function getListIdWorkInstructions(): string {
   return requireServerEnv("SHAREPOINT_LIST_WORK_INSTRUCTIONS_ID");
 }
 
+/** 既読管理リストのリスト ID（端末間で既読を同期するため必須） */
+export function getListIdSeenItems(): string {
+  return requireServerEnv("SHAREPOINT_LIST_SEEN_ITEMS_ID");
+}
+
 /**
  * アプリユーザー（権限）リストのリスト ID。
  * 現行の一覧・日報・指示書 API では未使用。将来の権限連携用。未設定可。

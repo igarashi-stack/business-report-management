@@ -16,7 +16,6 @@ import { ListSortTh, type ListSortDir } from "@/components/ui/ListSortTh";
 import {
   formatListUpdatedAt,
   formatReportBusinessDateTime,
-  formatSlashDateTime,
 } from "@/lib/time/formatJa";
 import type { DailyReport, DirectoryUser, WorkInstruction } from "@/types/models";
 import {
@@ -44,6 +43,9 @@ export default function DashboardPage() {
   const router = useRouter();
   const { getToken } = useAccessToken();
   const byUserSeen = useSeenStore((s) => s.byUser);
+  const setUserSeen = useSeenStore((s) => s.setUserSeen);
+  const markReportSeen = useSeenStore((s) => s.markReportSeen);
+  const markInstructionSeen = useSeenStore((s) => s.markInstructionSeen);
   const [receivedInstructions, setReceivedInstructions] = useState<
     WorkInstruction[]
   >([]);
@@ -59,6 +61,8 @@ export default function DashboardPage() {
   const [instrSortKey, setInstrSortKey] =
     useState<ReceivedInstructionListSortKey>("updated");
   const [instrSortDir, setInstrSortDir] = useState<ListSortDir>("desc");
+  const [markAllReportsBusy, setMarkAllReportsBusy] = useState(false);
+  const [markAllInstrBusy, setMarkAllInstrBusy] = useState(false);
 
   useEffect(() => {
     if (!authed) router.replace("/login");
@@ -70,10 +74,11 @@ export default function DashboardPage() {
       setInstrErr(null);
       setReportErr(null);
       try {
-        const [insRes, repRes, dirRes] = await Promise.all([
+        const [insRes, repRes, dirRes, seenRes] = await Promise.all([
           authenticatedFetch(getToken, "/api/work-instructions"),
           authenticatedFetch(getToken, "/api/daily-reports"),
           authenticatedFetch(getToken, "/api/users"),
+          authenticatedFetch(getToken, "/api/seen"),
         ]);
         const insData = await insRes.json();
         if (!insRes.ok) throw new Error(insData.error);
@@ -90,13 +95,18 @@ export default function DashboardPage() {
         if (dirRes.ok) {
           setDirectory((dirData.items ?? []) as DirectoryUser[]);
         }
+
+        const seenData = await seenRes.json().catch(() => ({}));
+        if (seenRes.ok && seenData?.seen) {
+          setUserSeen(user.id, seenData.seen);
+        }
       } catch (e) {
         const msg = e instanceof Error ? e.message : "読み込みに失敗しました";
         setInstrErr(msg);
         setReportErr(msg);
       }
     })();
-  }, [getToken, user]);
+  }, [getToken, setUserSeen, user]);
 
   useEffect(() => {
     setReportPage(1);
@@ -279,6 +289,52 @@ export default function DashboardPage() {
     [sortedReceivedInstructions, safeInstrPage]
   );
 
+  async function markAllReportsAsRead() {
+    if (!user) return;
+    const ids = submissionNotificationBase.map((r) => r.id).filter(Boolean);
+    if (ids.length === 0) return;
+    setMarkAllReportsBusy(true);
+    setReportErr(null);
+    const atMs = Date.now();
+    try {
+      const res = await authenticatedFetch(getToken, "/api/seen/mark-all", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "report", ids, atMs }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error ?? "既読更新に失敗しました");
+      for (const id of ids) markReportSeen(user.id, id, atMs);
+    } catch (e) {
+      setReportErr(e instanceof Error ? e.message : "既読更新に失敗しました");
+    } finally {
+      setMarkAllReportsBusy(false);
+    }
+  }
+
+  async function markAllInstructionsAsRead() {
+    if (!user) return;
+    const ids = receivedInstructions.map((w) => w.id).filter(Boolean);
+    if (ids.length === 0) return;
+    setMarkAllInstrBusy(true);
+    setInstrErr(null);
+    const atMs = Date.now();
+    try {
+      const res = await authenticatedFetch(getToken, "/api/seen/mark-all", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "instruction", ids, atMs }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error ?? "既読更新に失敗しました");
+      for (const id of ids) markInstructionSeen(user.id, id, atMs);
+    } catch (e) {
+      setInstrErr(e instanceof Error ? e.message : "既読更新に失敗しました");
+    } finally {
+      setMarkAllInstrBusy(false);
+    }
+  }
+
   if (sessionError) {
     return (
       <div className="space-y-3 rounded border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
@@ -305,18 +361,28 @@ export default function DashboardPage() {
       </h1>
 
       <section className="space-y-3">
-        <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
-          <ReportDocumentIcon
-            className="h-6 w-6 shrink-0 text-sky-600"
-            aria-hidden
-          />
-          受信した業務報告書
-          {unseenSubmissionReportIds.size > 0 ? (
-            <span className="ml-2 rounded bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-900">
-              未読 {unseenSubmissionReportIds.size}
-            </span>
-          ) : null}
-        </h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
+            <ReportDocumentIcon
+              className="h-6 w-6 shrink-0 text-sky-600"
+              aria-hidden
+            />
+            受信した業務報告書
+            {unseenSubmissionReportIds.size > 0 ? (
+              <span className="ml-2 rounded bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-900">
+                未読 {unseenSubmissionReportIds.size}
+              </span>
+            ) : null}
+          </h2>
+          <button
+            type="button"
+            onClick={() => void markAllReportsAsRead()}
+            disabled={markAllReportsBusy || unseenSubmissionReportIds.size === 0}
+            className="rounded border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50"
+          >
+            全て既読にする
+          </button>
+        </div>
         {reportErr && (
           <p className="text-sm text-red-600" role="alert">
             {reportErr}
@@ -413,18 +479,28 @@ export default function DashboardPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
-          <InstructionDocumentIcon
-            className="h-6 w-6 shrink-0 text-amber-600"
-            aria-hidden
-          />
-          受信した業務指示書
-          {unseenInstructionIds.size > 0 ? (
-            <span className="ml-2 rounded bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900">
-              未読 {unseenInstructionIds.size}
-            </span>
-          ) : null}
-        </h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-900">
+            <InstructionDocumentIcon
+              className="h-6 w-6 shrink-0 text-amber-600"
+              aria-hidden
+            />
+            受信した業務指示書
+            {unseenInstructionIds.size > 0 ? (
+              <span className="ml-2 rounded bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900">
+                未読 {unseenInstructionIds.size}
+              </span>
+            ) : null}
+          </h2>
+          <button
+            type="button"
+            onClick={() => void markAllInstructionsAsRead()}
+            disabled={markAllInstrBusy || unseenInstructionIds.size === 0}
+            className="rounded border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50"
+          >
+            全て既読にする
+          </button>
+        </div>
         {instrErr && (
           <p className="text-sm text-red-600" role="alert">
             {instrErr}

@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import {
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -125,10 +126,7 @@ function HandheldLinePicker({
   const pickable = pickableLines.length > 0;
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
-  const listId = useMemo(
-    () => `handheld-picker-${Math.random().toString(36).slice(2)}`,
-    []
-  );
+  const listId = useId();
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
