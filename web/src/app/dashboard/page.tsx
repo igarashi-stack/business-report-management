@@ -65,6 +65,7 @@ export default function DashboardPage() {
   const [markAllReportsBusy, setMarkAllReportsBusy] = useState(false);
   const [markAllInstrBusy, setMarkAllInstrBusy] = useState(false);
   const [seenDebugJson, setSeenDebugJson] = useState<string | null>(null);
+  const seenDebugEnabled = searchParams?.get("seenDebug") === "1";
 
   useEffect(() => {
     if (!authed) router.replace("/login");
@@ -112,8 +113,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!user) return;
-    const enabled = searchParams?.get("seenDebug") === "1";
-    if (!enabled) {
+    if (!seenDebugEnabled) {
       setSeenDebugJson(null);
       return;
     }
@@ -132,7 +132,7 @@ export default function DashboardPage() {
         );
       }
     })();
-  }, [getToken, searchParams, user]);
+  }, [getToken, seenDebugEnabled, user]);
 
   useEffect(() => {
     setReportPage(1);
@@ -395,7 +395,17 @@ export default function DashboardPage() {
             {seenDebugJson}
           </pre>
         </section>
-      ) : null}
+      ) : (
+        <div className="flex items-center justify-end">
+          <button
+            type="button"
+            onClick={() => router.push("/dashboard?seenDebug=1")}
+            className="rounded border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50"
+          >
+            既読デバッグを表示
+          </button>
+        </div>
+      )}
 
       <section className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
