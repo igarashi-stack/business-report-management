@@ -66,6 +66,9 @@ export default function DashboardPage() {
   const [markAllInstrBusy, setMarkAllInstrBusy] = useState(false);
   const [seenDebugJson, setSeenDebugJson] = useState<string | null>(null);
   const seenDebugEnabled = searchParams?.get("seenDebug") === "1";
+  const [seenDebugActionResult, setSeenDebugActionResult] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     if (!authed) router.replace("/login");
@@ -115,6 +118,7 @@ export default function DashboardPage() {
     if (!user) return;
     if (!seenDebugEnabled) {
       setSeenDebugJson(null);
+      setSeenDebugActionResult(null);
       return;
     }
     void (async () => {
@@ -133,6 +137,47 @@ export default function DashboardPage() {
       }
     })();
   }, [getToken, seenDebugEnabled, user]);
+
+  async function refreshSeenDebug() {
+    try {
+      const res = await authenticatedFetch(getToken, "/api/seen?debug=1");
+      const json = await res.json().catch(() => ({}));
+      setSeenDebugJson(JSON.stringify(json, null, 2));
+    } catch (e) {
+      setSeenDebugJson(
+        JSON.stringify(
+          { error: e instanceof Error ? e.message : "debug fetch failed" },
+          null,
+          2
+        )
+      );
+    }
+  }
+
+  async function debugMarkAllInstructions() {
+    if (!user) return;
+    const ids = receivedInstructions.map((w) => w.id).filter(Boolean);
+    const atMs = Date.now();
+    try {
+      const res = await authenticatedFetch(getToken, "/api/seen/mark-all", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "instruction", ids, atMs }),
+      });
+      const data = await res.json().catch(() => ({}));
+      setSeenDebugActionResult(JSON.stringify({ status: res.status, data }, null, 2));
+    } catch (e) {
+      setSeenDebugActionResult(
+        JSON.stringify(
+          { error: e instanceof Error ? e.message : "mark-all failed" },
+          null,
+          2
+        )
+      );
+    } finally {
+      await refreshSeenDebug();
+    }
+  }
 
   useEffect(() => {
     setReportPage(1);
@@ -388,9 +433,32 @@ export default function DashboardPage() {
 
       {seenDebugJson ? (
         <section className="rounded border border-slate-200 bg-slate-50 p-3">
-          <p className="text-xs font-semibold text-slate-700">
-            seen debug（`/dashboard?seenDebug=1`）
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-semibold text-slate-700">
+              seen debug（`/dashboard?seenDebug=1`）
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => void refreshSeenDebug()}
+                className="rounded border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50"
+              >
+                再読込
+              </button>
+              <button
+                type="button"
+                onClick={() => void debugMarkAllInstructions()}
+                className="rounded border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50"
+              >
+                既読同期テスト（指示書）
+              </button>
+            </div>
+          </div>
+          {seenDebugActionResult ? (
+            <pre className="mt-2 max-h-[240px] overflow-auto whitespace-pre-wrap break-words rounded bg-white p-2 text-[11px] text-slate-800">
+              {seenDebugActionResult}
+            </pre>
+          ) : null}
           <pre className="mt-2 max-h-[320px] overflow-auto whitespace-pre-wrap break-words rounded bg-white p-2 text-[11px] text-slate-800">
             {seenDebugJson}
           </pre>
