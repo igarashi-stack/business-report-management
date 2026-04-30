@@ -17,10 +17,30 @@ export async function GET(req: Request) {
         syncEnabled: false,
       });
     }
+    const url = new URL(req.url);
+    const debug = url.searchParams.get("debug") === "1";
     const keys = await resolveSeenFieldKeys(token, siteId, listId);
     const items = await listItems(token, siteId, listId);
     const seen = userSeenFromListItems(items, me.id, keys);
-    return Response.json({ seen, syncEnabled: true });
+    if (!debug) {
+      return Response.json({ seen, syncEnabled: true });
+    }
+    // debug=1: 列の解決結果と、生データ（先頭数件）を返す
+    const sample = items
+      .slice(0, 5)
+      .map((it) => ({
+        id: it.id,
+        fields: it.fields ?? {},
+      }));
+    return Response.json({
+      seen,
+      syncEnabled: true,
+      debug: {
+        resolvedKeys: keys,
+        totalItems: items.length,
+        sample,
+      },
+    });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Error";
     return Response.json({ error: msg }, { status: 500 });

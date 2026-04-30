@@ -87,6 +87,16 @@ function asNumber(v: unknown): number {
     const n = Number(cleaned);
     return Number.isFinite(n) ? n : 0;
   }
+  if (v && typeof v === "object") {
+    const o = v as Record<string, unknown>;
+    const raw = o.value ?? o["Value"] ?? o["number"] ?? o["Number"];
+    if (typeof raw === "number" && Number.isFinite(raw)) return raw;
+    if (typeof raw === "string") {
+      const cleaned = raw.replace(/,/g, "").trim();
+      const n = Number(cleaned);
+      return Number.isFinite(n) ? n : 0;
+    }
+  }
   return 0;
 }
 
